@@ -1,5 +1,6 @@
 const Quiz = require('../models/quizModel.js');
 const User = require('../models/userModel.js');
+const jwt = require('jsonwebtoken');
 
 // Fetch all quiz questions
 exports.getQuizQuestions = async (req, res) => {
@@ -14,7 +15,11 @@ exports.getQuizQuestions = async (req, res) => {
 
 // Submit quiz answers
 exports.submitQuizAnswers = async (req, res) => {
-    const { userId, answers } = req.body;
+    const token = req.cookies.jwt;
+    const decodedToken= jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decodedToken.user_id
+    const answers = req.body;
+    console.log(answers);
 
     try {
         const questions = await Quiz.find({});
@@ -30,6 +35,7 @@ exports.submitQuizAnswers = async (req, res) => {
 
         // Update the user's quiz scores
         const user = await User.findById(userId);
+        console.log(user);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
