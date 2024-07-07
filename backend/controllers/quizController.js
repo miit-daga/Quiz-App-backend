@@ -8,7 +8,7 @@ exports.getQuizQuestions = async (req, res) => {
         const questions = await Quiz.find({});
         res.status(200).json({ questions });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: 'Failed to fetch quiz questions' });
     }
 };
@@ -16,37 +16,40 @@ exports.getQuizQuestions = async (req, res) => {
 // Submit quiz answers
 exports.submitQuizAnswers = async (req, res) => {
     const token = req.cookies.jwt;
-    const decodedToken= jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decodedToken.user_id
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decodedToken.user_id;
     const answers = req.body;
-    console.log(answers);
-
+    
     try {
         const questions = await Quiz.find({});
         let score = 0;
 
         questions.forEach((question) => {
-            if (answers[question._id] === question.correctAnswer) {
+            if (answers[question._id] == question.correctAnswer) {
                 score += 1;
             }
         });
 
-        const total = questions.length;
-
-        // Update the user's quiz scores
+        // Update the user's quiz score
         const user = await User.findById(userId);
-        console.log(user);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        user.quizScores.push({ score, total });
+
+        // Update the user's quizScore field with the latest score
+        user.quizScore = score;
         await user.save();
 
+        const total = questions.length;
+
+        // Send back updated score and total questions
         res.status(200).json({ score, total });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Failed to submit quiz answers' });
     }
 };
+
 // Add new quiz question
 exports.addQuizQuestion = async (req, res) => {
     const { question, options, correctAnswer } = req.body;
@@ -64,6 +67,25 @@ exports.addQuizQuestion = async (req, res) => {
         await newQuestion.save();
         res.status(201).json({ message: 'Quiz question added successfully' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Failed to add quiz question' });
+    }
+};
+
+exports.getQuizScore = async (req, res) => {
+    const token = req.cookies.jwt;
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decodedToken.user_id;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        res.status(200).json({ score: user.quizScore });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch quiz score' });
     }
 };

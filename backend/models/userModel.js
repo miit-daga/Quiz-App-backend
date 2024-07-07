@@ -32,13 +32,9 @@ const userSchema = mongoose.Schema(
         message:
           'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
       },
-      quizScores: [
-        {
-          score: Number,
-          total: Number,
-          date: { type: Date, default: Date.now },
-        },
-      ],
+    },
+    quizScore: {
+      type: Number,
     },
   },
   {
@@ -47,8 +43,8 @@ const userSchema = mongoose.Schema(
   }
 );
 
-// eslint-disable-next-line func-names
-userSchema.pre('save', async function (next) {
+// Hash password before saving
+userSchema.pre('save', async function(next) {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
