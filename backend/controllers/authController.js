@@ -25,6 +25,8 @@ const getAllUsers = async (req, resp) => {
 const createUser = async (req, resp) => {
   try {
     const { username, email, password } = req.body;
+    const salt = await bcrypt.genSalt(10);
+    password = await bcrypt.hash(password, salt);
 
     const user = new User({
       username,
