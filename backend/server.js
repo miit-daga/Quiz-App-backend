@@ -1,10 +1,11 @@
 const express = require("express");
 const colors = require("colors");
 const dotenv = require("dotenv").config();
-const port = process.env.PORT || 3000;
+const port = 3001;
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const quizRoutes = require("./routes/quizRoutes");
 const cookieParser = require('cookie-parser');
 
 connectDB();
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 });
 
 app.use(authRoutes);
+app.use(quizRoutes);
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}!`);

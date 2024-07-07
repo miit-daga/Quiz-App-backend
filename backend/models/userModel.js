@@ -32,6 +32,13 @@ const userSchema = mongoose.Schema(
         message:
           'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
       },
+      quizScores: [
+        {
+          score: Number,
+          total: Number,
+          date: { type: Date, default: Date.now },
+        },
+      ],
     },
   },
   {
