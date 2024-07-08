@@ -19,7 +19,7 @@ exports.submitQuizAnswers = async (req, res) => {
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const userId = decodedToken.user_id;
     const answers = req.body;
-    
+
     try {
         const questions = await Quiz.find({});
         let score = 0;
@@ -30,15 +30,12 @@ exports.submitQuizAnswers = async (req, res) => {
             }
         });
 
-        // Update the user's quiz score
-        const user = await User.findById(userId);
+        // Update the user's quizScore without altering other fields
+        const user = await User.findByIdAndUpdate(userId, { quizScore: score }, { new: true });
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
-        // Update the user's quizScore field with the latest score
-        user.quizScore = score;
-        await user.save();
 
         const total = questions.length;
 
@@ -82,7 +79,6 @@ exports.getQuizScore = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
         res.status(200).json({ score: user.quizScore });
     } catch (error) {
         console.error(error);
